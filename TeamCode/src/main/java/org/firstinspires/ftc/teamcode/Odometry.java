@@ -35,6 +35,8 @@ public class Odometry extends LinearOpMode {
         leftDeadwheel.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightDeadwheel.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         perpDeadwheel.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        this.color = color;
     }
 
     static double currentAngle; //degrees
