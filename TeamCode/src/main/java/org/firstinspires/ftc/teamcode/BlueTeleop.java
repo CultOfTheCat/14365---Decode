@@ -36,6 +36,8 @@ public class BlueTeleop extends LinearOpMode
         intake.openTopServo(false);
         Lifting lift = new Lifting(hardwareMap, telemetry);
 
+        Odometry odometry = new Odometry(hardwareMap, telemetry, "blue");
+
         float power = 1;
         boolean lastFrameDPad = false;
 
@@ -88,6 +90,8 @@ public class BlueTeleop extends LinearOpMode
 
         while (opModeIsActive())
         {
+            odometry.update();
+            odometry.odometryTelemetry();
             center = aprilTagDetection.telemetryAprilTag();
 
             double y = gamepad1.right_stick_y; // Remember, Y stick value is reversed
