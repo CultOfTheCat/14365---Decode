@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 //@TeleOp
 public class Intake extends LinearOpMode
 {
+    Telemetry telemetry;
     int shootingPosition = 1;
 
     private NormalizedColorSensor colorSensor;
@@ -43,6 +44,8 @@ public class Intake extends LinearOpMode
 
     public Intake(HardwareMap hardwareMap, Telemetry telemetry)
     {
+        this.telemetry = telemetry;
+
         shootMotor = hardwareMap.get(DcMotorEx.class, "shootMotor");
 
         servoBottom = hardwareMap.get(Servo.class, "bottomIntakeServo");

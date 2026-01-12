@@ -36,7 +36,8 @@ public class BlueTeleop extends LinearOpMode
         intake.openTopServo(false);
         Lifting lift = new Lifting(hardwareMap, telemetry);
 
-        Odometry odometry = new Odometry(hardwareMap, telemetry, "blue");
+        //isAuto set to true for testing purposes
+        Odometry odometry = new Odometry(hardwareMap, telemetry, "blue", true, new Pose(0, 100, 0));
 
         float power = 1;
         boolean lastFrameDPad = false;

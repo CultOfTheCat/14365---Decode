@@ -1,4 +1,6 @@
 package org.firstinspires.ftc.teamcode;
+import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.telemetry;
+
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -8,7 +10,8 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
-public class Odometry extends LinearOpMode {
+public class Odometry {
+    Telemetry telemetry;
     DcMotorEx leftDeadwheel;
     DcMotorEx rightDeadwheel;
     DcMotorEx perpDeadwheel;
@@ -19,34 +22,52 @@ public class Odometry extends LinearOpMode {
 
     final static double perpDistance = 17.78; //cm
 
-    static double angle0; //leftDeadwheel.getCurrentPosition() - rightDeadwheel.getCurrentPosition() / deadwheelDistance;
-
     String color;
 
-    private static final Point blueGoalPosition = new Point(26, 22);
-    private static final Point redGoalPosition = new Point(340, 22);
+    private static final Point blueGoalPosition = new Point(340, 22);
+    private static final Point redGoalPosition = new Point(340, 320);
 
-    public Odometry(HardwareMap hardwareMap, Telemetry telemetry, String color)
+    public Odometry(HardwareMap hardwareMap, Telemetry telemetry, String color, boolean isAuto)
     {
+        this.telemetry = telemetry;
+
         this.leftDeadwheel = hardwareMap.get(DcMotorEx.class, "leftSlide"); //left tick/rev = -2002.6 (forward)
         this.rightDeadwheel = hardwareMap.get(DcMotorEx.class, "rightSlide"); //right tick/rev = -2004.4 (forward)
         this.perpDeadwheel = hardwareMap.get(DcMotorEx.class, "perpendicularOdo");
 
-        leftDeadwheel.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rightDeadwheel.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        perpDeadwheel.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        if(isAuto)
+        {
+            leftDeadwheel.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            rightDeadwheel.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            perpDeadwheel.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+            angle0 = Math.PI;
+            x0 = 0;
+            y0 = 0;
+        }
 
         this.color = color;
     }
+    public Odometry(HardwareMap hardwareMap, Telemetry telemetry, String color, boolean isAuto, Pose startPose)
+    {
+        this(hardwareMap, telemetry, color, isAuto);
+        if(isAuto)
+        {
+            angle0 = startPose.angle;
+            x0 = startPose.x;
+            y0 = startPose.y;
+        }
+    }
 
+    static double angle0; //leftDeadwheel.getCurrentPosition() - rightDeadwheel.getCurrentPosition() / deadwheelDistance
     static double currentAngle; //degrees
 
     static double cmLeft;
     static double cmRight;
     static double cmPerp;
 
-    static double x0 = 0;
-    static double y0 = 0;
+    static double x0;
+    static double y0;
 
     double deltaCenterX;
     double deltaCenterY;
@@ -62,6 +83,7 @@ public class Odometry extends LinearOpMode {
 
         currentAngle = angle0 + ((cmLeft - cmRight) / deadwheelDistance);
         currentAngle %= 2 * Math.PI;
+        currentAngle -= Math.PI;
 
         deltaCenterX = ((cmLeft + cmRight) / 2);
         deltaCenterY = (cmPerp - (perpDistance * currentAngle));
@@ -94,6 +116,10 @@ public class Odometry extends LinearOpMode {
     {
         return new Point(currentX, currentY);
     }
+    public Pose getPose()
+    {
+        return new Pose(currentX, currentY, currentAngle);
+    }
     public double getX()
     {
         return currentX;
@@ -123,23 +149,18 @@ public class Odometry extends LinearOpMode {
     {
         if(color.equals("blue"))
         {
-            double a = Math.abs(getX() - blueGoalPosition.x); //adjacent
-            double b = Math.abs(getY() - blueGoalPosition.y); //opposite
+            double a = blueGoalPosition.x - getX(); //adjacent / height
+            double b = blueGoalPosition.y - getY(); //opposite / base
 
             return Math.atan(b/a);
         }
         if(color.equals("red"))
         {
-            double a = Math.abs(getX() - redGoalPosition.x); //adjacent
-            double b = Math.abs(getY() - redGoalPosition.y); //opposite
+            double a = redGoalPosition.x - getX(); //adjacent / height
+            double b = redGoalPosition.y - getY(); //opposite / base
 
             return Math.atan(b/a);
         }
         return -404;
-    }
-
-    public void runOpMode()
-    {
-
     }
 }
